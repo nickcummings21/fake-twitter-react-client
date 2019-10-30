@@ -1,0 +1,13 @@
+.modal {
+  position: fixed;
+  z-index: 500;
+  top: 20%;
+  left: calc(50% - 300px);
+  /* width: 600px; */
+  margin: auto;
+  /* padding: 16px; */
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: all 0.3s ease-out;
+}

@@ -1,0 +1,42 @@
+.register-title {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #1da1f2;
+  margin: 2rem 0;
+}
+
+.register-input-area {
+  max-width: 300px;
+  width: 40%;
+  margin: auto;
+}
+
+input {
+  width: 100%;
+}
+
+.register .prof-pic,
+.register .name,
+.register .username,
+.register .email,
+.register .password {
+  margin-bottom: 1em;
+}
+
+.confirm-password {
+  margin-bottom: 2rem;
+}
+
+.register-btn {
+  cursor: pointer;
+  text-align: center;
+  width: 100%;
+  padding: 6px;
+  border-radius: 100px;
+  background: #1da1f2;
+  color: white;
+}
+.register-btn:hover {
+  background: #147bba;
+}

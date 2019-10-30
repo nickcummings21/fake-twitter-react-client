@@ -1,0 +1,24 @@
+.navbar {
+  background: #1da1f2;
+  color: white;
+  padding: 0.5rem 2rem;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand {
+  cursor: pointer;
+  padding-right: 1rem;
+  font-size: 2rem;
+}
+
+.navbar-title {
+  cursor: pointer;
+  flex: 1;
+  font-size: 2rem;
+}
+
+.navbar-link:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}

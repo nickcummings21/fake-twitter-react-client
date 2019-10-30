@@ -1,0 +1,211 @@
+.home {
+  width: 80%;
+  max-width: 1000px;
+  min-height: 100vh;
+  margin: 0 auto;
+  display: grid;
+  grid-template-areas:
+    "info-col toolbar"
+    "info-col feed";
+  grid-template-columns: 200px auto;
+  grid-template-rows: 40px auto;
+}
+
+.home .user-info-col {
+  grid-area: info-col;
+  border-right: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+}
+
+.home .user-info-col .prof-pic-container {
+  width: 150px;
+  height: 150px;
+  margin: 1rem auto;
+  border-radius: 50%;
+  overflow: hidden;
+  /* background: #888; */
+}
+
+.home .user-info-col .prof-pic-container img {
+  width: 100%;
+}
+
+.home .user-info {
+  text-align: center;
+}
+
+.home .user-info div {
+  margin-bottom: 0.2rem;
+}
+
+.home .user-info .user-realname {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.home .user-info .user-username {
+  color: #777;
+}
+
+.home .user-info .user-following:hover,
+.home .user-info .user-followers:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.home .user-info .publish-status-btn {
+  background: orange;
+  color: white;
+  width: 100px;
+  margin: 1rem auto;
+  padding: .5rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.home .toolbar {
+  grid-area: toolbar;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+}
+
+.home .toolbar-link {
+  font-weight: 700;
+  color: black;
+  margin: 0 1rem;
+}
+.home .toolbar-link:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+.home .toolbar-link.active {
+  text-decoration: underline;
+}
+
+.home .story,
+.home .feed {
+  grid-area: feed;
+  padding: 1rem;
+  /* border: 1px solid #ccc; */
+}
+
+.home .user-info-modal {
+  width: 400px;
+  padding: 2rem;
+}
+
+.home .user-info-modal-title {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: .2rem;
+}
+
+.home .user-info-modal-list {
+}
+
+.user-info-modal-close-btn,
+.status-modal-close-btn {
+  width: 100px;
+  margin: 2rem auto 0;
+  background: #1da1f2;
+  color: white;
+  border-radius: 8px;
+  text-align: center;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.status-modal {
+  width: 400px;
+}
+
+.status-modal-title-row {
+  display: flex;
+  padding: .5rem 1rem;
+  width: 100%;
+  height: 100px;
+  background: #1da1f2;
+  border-radius: 8px 8px 0 0;
+}
+
+.status-modal-prof-pic-container {
+  height: 100%;
+  width: 80px;
+  overflow: hidden;
+  border-radius: 50%;
+  margin-right: 1rem;
+}
+
+.status-modal-prof-pic-container img {
+  width: 100%;
+}
+
+.status-modal-names {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: white;
+}
+
+.status-modal-realname {
+  font-size: 1.2rem;
+}
+
+.user-link:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.status-modal-body {
+  padding: 1rem;
+}
+
+.status-modal-attachment {
+  height: 100px;
+  width: 100px;
+  text-align: end;
+  margin-top: 1rem;
+}
+
+.status-modal-attachment img {
+  height: 100%;
+  width: 100%;
+  cursor: pointer;
+}
+
+.publish-status-modal {
+  width: 400px;
+  padding: 2rem;
+}
+
+.publish-status-modal-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.publish-status-modal-input textarea {
+
+}
+
+.publish-status-modal-btns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.publish-status-modal-submit-btn,
+.publish-status-modal-cancel-btn {
+  width: 100px;
+  margin: 1rem 1rem 0;
+  cursor: pointer;
+  background: #1da1f2;
+  color: white;
+  border-radius: 8px;
+  text-align: center;
+  padding: 8px;
+  cursor: pointer;
+}
+
