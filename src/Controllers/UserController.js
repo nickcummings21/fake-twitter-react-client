@@ -11,5 +11,9 @@ export default class UserController {
     return this.userModel.getUser(username);
   }
 
+  getUserInfo(username) {
+    return this.userModel.getUserInfo(username);
+  }
+
   createUser(user) {}
 }

@@ -1,26 +1,24 @@
 import { Status } from "../Models";
+import { StatusService } from "../Services";
 
 export default class StatusController {
   statusModel;
+  statusService;
 
   constructor() {
     this.statusModel = new Status();
+    this.statusService = new StatusService();
   }
 
-  getUserStory({ username }) {
+  getUserStory = async username => {
     return this.statusModel.getUserStatuses(username);
   }
 
-  getUserFeed({ following }) {
-    let feed = [];
-    for (let i = 0; i < following.length; i++) {
-      let userStatuses = this.statusModel.getUserStatuses(following[i]);
-      feed = feed.concat(userStatuses);
-    }
-    return feed;
+  getUserFeed = async username => {
+    return await this.statusService.getUserFeed(username);
   }
 
-  createStatus(username, text, attachment) {
+  createStatus = async (username, text, attachment) => {
     
   }
 }

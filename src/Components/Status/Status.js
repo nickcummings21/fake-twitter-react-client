@@ -3,7 +3,8 @@ import "./Status.css";
 import "../../assets/blank-prof-pic.png";
 
 const Status = props => {
-  const imgSrc = props.user.pic === "" ? "/blank-prof-pic.png" : props.user.pic;
+  const imgSrc = (!props.user.profilePic || props.user.profilePic === "") ? "/blank-prof-pic.png" : props.user.profilePic;
+  // console.log("Prof Image", props.user, imgSrc);
   return (
     <div className="status" onClick={props.open}>
       <div className="status-prof-pic-col">

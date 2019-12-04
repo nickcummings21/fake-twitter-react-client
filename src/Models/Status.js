@@ -58,4 +58,8 @@ export default class Status {
     }
     return userStatuses;
   }
+
+  createStatus(status) {
+    // TODO: send status to status service
+  }
 }

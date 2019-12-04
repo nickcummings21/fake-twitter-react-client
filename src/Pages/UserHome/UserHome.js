@@ -1,25 +1,88 @@
 import React, { useState } from "react";
 
 import { Modal, Backdrop } from "../../Components";
+import { UserInfo, StatusModal } from "../../PageComponents";
 import "./UserHome.css";
 
-// import "../../"
 import { Status } from "../../Components";
 import { UserController, StatusController } from "../../Controllers";
 
 const UserHome = props => {
   const userController = new UserController();
   const statusController = new StatusController();
-  const user = userController.getUser(props.targetUser);
-  console.log(props.targetUser, user);
 
-  const [pageState, setPageState] = useState("feed");
+  const [pageState, setPageState] = useState({
+    activePage: "feed",
+    pageLoaded: false,
+    user: {
+      basicUserData: null,
+      allUserData: null,
+      userFeed: null,
+      userStory: null
+    },
+    cachedUsers: {}
+  });
   const [modalState, setModalState] = useState("hide");
   const [selectedStatus, setSelectedStatus] = useState(null);
+
+  const resetPageState = newPage => {
+    setPageState({
+      activePage: newPage ? newPage : "feed",
+      pageLoaded: false,
+      user: {
+        basicData: null,
+        allData: null,
+        feed: null,
+        story: null
+      },
+      cachedUsers: {}
+    });
+  };
+
+  const getPageInfo = async () => {
+    if (pageState.pageLoaded) return;
+    console.log("Getting page info.");
+
+    const user = await userController.getUser(props.targetUser);
+    console.log("Got target user", props.targetUser, user);
+
+    const userInfo = await userController.getUserInfo(user.username);
+    const userFeed = await statusController.getUserFeed(user.username);
+    const userStory = await statusController.getUserStory(user.username);
+
+    // Cache basic info for followers and followees and users in feed
+    const cachedUsers = {};
+    for (let i = 0; i < userInfo.followers.length; i++) {
+      const cacheUser = userInfo.followers[i];
+      cachedUsers[cacheUser] = await userController.getUser(cacheUser);
+    }
+    for (let i = 0; i < userInfo.following.length; i++) {
+      const cacheUser = userInfo.following[i];
+      cachedUsers[cacheUser] = await userController.getUser(cacheUser);
+    }
+    for (let i = 0; i < userFeed; i++) {
+      const cacheUser = userFeed[i].user;
+      cachedUsers[cacheUser] = await userController.getUser(cacheUser);
+    }
+
+    console.log("Page just loaded.", userFeed);
+    setPageState({
+      activePage: "feed",
+      pageLoaded: true,
+      user: {
+        basicData: { ...user },
+        allData: { ...userInfo },
+        feed: userFeed,
+        story: userStory
+      },
+      cachedUsers
+    });
+  };
 
   const switchTargetUser = username => {
     props.switchTargetUser(username);
     closeModal();
+    resetPageState();
   };
 
   const UserLink = props => {
@@ -31,36 +94,39 @@ const UserHome = props => {
   };
 
   const getUserFollowing = () => {
-    if (user.following.length > 0) {
-      let following = [];
-      for (let i = 0; i < user.following.length; i++) {
-        let thisUsername = user.following[i];
-        let thisUser = userController.getUser(thisUsername);
-        following.push(
+    // console.log(pageState.user);
+    const following = pageState.user.allData.following;
+    if (following.length > 0) {
+      let followingElArray = [];
+      for (let i = 0; i < following.length; i++) {
+        let thisUsername = following[i];
+        let thisUser = pageState.cachedUsers[thisUsername];
+        followingElArray.push(
           <div key={i}>
             {thisUser.name} (@
             <UserLink user={thisUsername}>{thisUsername}</UserLink>)
           </div>
         );
       }
-      return following;
+      return followingElArray;
     }
   };
 
   const getUserFollowers = () => {
-    if (user.followers.length > 0) {
-      let followers = [];
-      for (let i = 0; i < user.followers.length; i++) {
-        let thisUsername = user.followers[i];
-        let thisUser = userController.getUser(thisUsername);
-        followers.push(
+    const followers = pageState.user.allData.followers;
+    if (followers.length > 0) {
+      let followersElArray = [];
+      for (let i = 0; i < followers.length; i++) {
+        let thisUsername = followers[i];
+        let thisUser = pageState.cachedUsers[thisUsername];
+        followersElArray.push(
           <div key={i}>
             {thisUser.name} (@
             <UserLink user={thisUsername}>{thisUsername}</UserLink>)
           </div>
         );
       }
-      return followers;
+      return followersElArray;
     }
   };
 
@@ -89,11 +155,22 @@ const UserHome = props => {
 
   const switchPage = page => {
     console.log(page);
-    setPageState(page);
+    setPageState(prevState => {
+      return {
+        activePage: page,
+        pageLoaded: true,
+        user: prevState.user,
+        cachedUsers: prevState.cachedUsers
+      };
+    });
+    // resetPageState(page);
   };
 
   const getActivePage = () => {
-    if (pageState === "story" || props.activeUser !== props.targetUser) {
+    if (
+      pageState.activePage === "story" ||
+      props.activeUser !== props.targetUser
+    ) {
       return renderUserStory();
     } else return renderUserFeed();
   };
@@ -101,12 +178,12 @@ const UserHome = props => {
   const renderUserStory = () => {
     return (
       <div className="story">
-        {statusController.getUserStory(user).map((status, i) => {
+        {pageState.user.story.map((status, i) => {
           return (
             <Status
               key={i}
               status={status}
-              user={userController.getUser(status.user)}
+              user={pageState.user.basicData}
               open={() => openViewStatusModal(status)}
             />
           );
@@ -118,12 +195,12 @@ const UserHome = props => {
   const renderUserFeed = () => {
     return (
       <div className="feed">
-        {statusController.getUserFeed(user).map((status, i) => {
+        {pageState.user.feed.map((status, i) => {
           return (
             <Status
               key={i}
               status={status}
-              user={userController.getUser(status.user)}
+              user={pageState.cachedUsers[status.user]}
               open={() => openViewStatusModal(status)}
             />
           );
@@ -134,152 +211,108 @@ const UserHome = props => {
 
   const renderSelectedStatus = () => {
     if (!selectedStatus) return null;
-    let statusUser = userController.getUser(selectedStatus.user);
+    let statusUser = pageState.cachedUsers[selectedStatus.user];
 
     return (
-      <div className="status-modal">
-        <div className="status-modal-title-row">
-          <div className="status-modal-prof-pic-container">
-            <img
-              src={require("../../assets" + statusUser.pic)}
-              alt="prof-pic"
-            />
+      <StatusModal
+        statusUser={statusUser}
+        selectedStatus={selectedStatus}
+        switchTargetUser={switchTargetUser}
+        closeModal={closeModal}
+      />
+    );
+  };
+
+  const renderPage = () => {
+    let storyClasses =
+      pageState === "story" ? "toolbar-link active" : "toolbar-link";
+    let feedClasses =
+      pageState === "feed" ? "toolbar-link active" : "toolbar-link";
+
+    return (
+      <div className="home">
+        <UserInfo
+          activeIsTarget={props.activeUser === props.targetUser}
+          user={pageState.user.allData}
+          openUserFollowersModal={openUserFollowersModal}
+          openUserFollowingModal={openUserFollowingModal}
+          openPublishStatusModal={openPublishStatusModal}
+        />
+        <div className="toolbar">
+          <div className={storyClasses} onClick={() => switchPage("story")}>
+            Story
           </div>
-          <div className="status-modal-names">
-            <div className="status-modal-realname">{statusUser.name}</div>
-            <div
-              className="status-modal-username user-link"
-              onClick={() => switchTargetUser(statusUser.username)}
-            >
-              @{statusUser.username}
-            </div>
-          </div>
-        </div>
-        <div className="status-modal-body">
-          <div className="status-modal-text">{selectedStatus.text}</div>
-          {selectedStatus.attachment !== "" ? (
-            <div className="status-modal-attachment">
-              <img
-                src={require("../../assets" + selectedStatus.attachment)}
-                alt=""
-                // onClick={() => window.open("../../assets" + selectedStatus.attachment, '_blank')}
-              />
+          {props.activeUser === props.targetUser ? (
+            <div className={feedClasses} onClick={() => switchPage("feed")}>
+              Feed
             </div>
           ) : null}
-          <div className="status-modal-close-btn" onClick={closeModal}>
-            Close
-          </div>
         </div>
+        {getActivePage()}
+        <Backdrop show={modalState !== "hide"} close={closeModal} />
+        <Modal show={modalState === "user-following"} width={400}>
+          <div className="user-info-modal">
+            <div className="user-info-modal-title">
+              {pageState.user.basicData.name} (@
+              {pageState.user.basicData.username})<br></br>is following:
+            </div>
+            <div className="user-info-modal-list">{getUserFollowing()}</div>
+            <div className="user-info-modal-close-btn" onClick={closeModal}>
+              Close
+            </div>
+          </div>
+        </Modal>
+        <Modal show={modalState === "user-followers"} width={400}>
+          <div className="user-info-modal">
+            <div className="user-info-modal-title">
+              {pageState.user.basicData.name} (@
+              {pageState.user.basicData.username})<br></br>is followed by:
+            </div>
+            <div className="user-info-modal-list">{getUserFollowers()}</div>
+            <div className="user-info-modal-close-btn" onClick={closeModal}>
+              Close
+            </div>
+          </div>
+        </Modal>
+        <Modal show={modalState === "view-status"} width={400}>
+          {renderSelectedStatus()}
+        </Modal>
+        <Modal show={modalState === "publish-status"} width={400}>
+          <div className="publish-status-modal">
+            <div className="publish-status-modal-title">Publish a status:</div>
+            <div className="publish-status-modal-input">
+              <textarea
+                name="status"
+                id="new-status"
+                cols="43"
+                rows="10"
+              ></textarea>
+            </div>
+            Attach a file:{" "}
+            <input type="file" className="publish-status-modal-attach-file" />
+            <div className="publish-status-modal-btns">
+              <div
+                className="publish-status-modal-submit-btn"
+                onClick={closeModal}
+              >
+                Submit
+              </div>
+              <div
+                className="publish-status-modal-cancel-btn"
+                onClick={closeModal}
+              >
+                Cancel
+              </div>
+            </div>
+          </div>
+        </Modal>
       </div>
     );
   };
 
-  let storyClasses =
-    pageState === "story" ? "toolbar-link active" : "toolbar-link";
-  let feedClasses =
-    pageState === "feed" ? "toolbar-link active" : "toolbar-link";
-
-  return (
-    <div className="home">
-      <div className="user-info-col">
-        <div className="prof-pic-container">
-          <img
-            src={require("../../assets" + user.pic)}
-            alt=""
-            className="prof-pic"
-          />
-        </div>
-        <div className="user-info">
-          <div className="user-realname">{user.name}</div>
-          <div className="user-username">@{user.username}</div>
-          <div className="user-following" onClick={openUserFollowingModal}>
-            Following: {user.following.length}
-          </div>
-          <div className="user-followers" onClick={openUserFollowersModal}>
-            Followers: {user.followers.length}
-          </div>
-          {props.activeUser === props.targetUser ? (
-            <div>
-              <div
-                className="publish-status-btn"
-                onClick={openPublishStatusModal}
-              >
-                Create post
-              </div>
-              <span>New profile picture: </span>
-              <input type="file" className="user-prof-pic-input" />
-            </div>
-          ) : null}
-        </div>
-      </div>
-      <div className="toolbar">
-        <div className={storyClasses} onClick={() => switchPage("story")}>
-          Story
-        </div>
-        {props.activeUser === props.targetUser ? (
-          <div className={feedClasses} onClick={() => switchPage("feed")}>
-            Feed
-          </div>
-        ) : null}
-      </div>
-      {getActivePage()}
-      <Backdrop show={modalState !== "hide"} close={closeModal} />
-      <Modal show={modalState === "user-following"} width={400}>
-        <div className="user-info-modal">
-          <div className="user-info-modal-title">
-            {user.name} (@{user.username})<br></br>is following:
-          </div>
-          <div className="user-info-modal-list">{getUserFollowing()}</div>
-          <div className="user-info-modal-close-btn" onClick={closeModal}>
-            Close
-          </div>
-        </div>
-      </Modal>
-      <Modal show={modalState === "user-followers"} width={400}>
-        <div className="user-info-modal">
-          <div className="user-info-modal-title">
-            {user.name} (@{user.username})<br></br>is followed by:
-          </div>
-          <div className="user-info-modal-list">{getUserFollowers()}</div>
-          <div className="user-info-modal-close-btn" onClick={closeModal}>
-            Close
-          </div>
-        </div>
-      </Modal>
-      <Modal show={modalState === "view-status"} width={400}>
-        {renderSelectedStatus()}
-      </Modal>
-      <Modal show={modalState === "publish-status"} width={400}>
-        <div className="publish-status-modal">
-          <div className="publish-status-modal-title">Publish a status:</div>
-          <div className="publish-status-modal-input">
-            <textarea
-              name="status"
-              id="new-status"
-              cols="43"
-              rows="10"
-            ></textarea>
-          </div>
-          Attach a file:{" "}
-          <input type="file" className="publish-status-modal-attach-file" />
-          <div className="publish-status-modal-btns">
-            <div
-              className="publish-status-modal-submit-btn"
-              onClick={closeModal}
-            >
-              Submit
-            </div>
-            <div
-              className="publish-status-modal-cancel-btn"
-              onClick={closeModal}
-            >
-              Cancel
-            </div>
-          </div>
-        </div>
-      </Modal>
-    </div>
-  );
+  getPageInfo();
+  console.log("Page loaded: ", pageState);
+  return pageState.pageLoaded ? renderPage() : <div></div>;
 };
 
 export default UserHome;
