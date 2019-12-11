@@ -9,7 +9,7 @@ const StatusModal = props => {
     <div className="status-modal">
       <div className="status-modal-title-row">
         <div className="status-modal-prof-pic-container">
-          <img src={require("../../assets" + statusUser.profilePic)} alt="prof-pic" />
+          <img src={statusUser.profilePic} alt="prof-pic" />
         </div>
         <div className="status-modal-names">
           <div className="status-modal-realname">{statusUser.name}</div>
@@ -23,10 +23,10 @@ const StatusModal = props => {
       </div>
       <div className="status-modal-body">
         <div className="status-modal-text">{selectedStatus.text}</div>
-        {selectedStatus.attachment !== "" ? (
+        {selectedStatus.attachment !== "none" ? (
           <div className="status-modal-attachment">
             <img
-              src={require("../../assets" + selectedStatus.attachment)}
+              src={selectedStatus.attachment}
               alt=""
               // onClick={() => window.open("../../assets" + selectedStatus.attachment, '_blank')}
             />

@@ -11,7 +11,7 @@ export default class StatusController {
   }
 
   getUserStory = async username => {
-    return this.statusModel.getUserStatuses(username);
+    return this.statusService.getUserStory(username);
   }
 
   getUserFeed = async username => {
@@ -19,6 +19,13 @@ export default class StatusController {
   }
 
   createStatus = async (username, text, attachment) => {
-    
+    const timestamp = Date.now() + "";
+    const newStatus = {
+      username,
+      text,
+      attachment,
+      timestamp
+    };
+    await this.statusService.createStatus(newStatus);
   }
 }

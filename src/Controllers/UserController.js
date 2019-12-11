@@ -15,5 +15,15 @@ export default class UserController {
     return this.userModel.getUserInfo(username);
   }
 
-  createUser(user) {}
+  createUser(user) {
+    this.userModel.createUser(user);
+  }
+
+  followUser = async (activeUser, followThisUser) => {
+    await this.userModel.followUser(activeUser, followThisUser);
+  };
+
+  unfollowUser = async (activeUser, unfollowThisUser) => {
+    await this.userModel.unfollowUser(activeUser, unfollowThisUser);
+  };
 }

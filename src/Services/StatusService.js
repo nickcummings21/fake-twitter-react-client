@@ -2,21 +2,21 @@ import ServerProxy from "../ServerProxy";
 
 export default class StatusService {
   serverProxy = new ServerProxy();
-  userFeedLastKey = -1;
-  userStoryLastKey = -1;
+  userFeedLastKey = 1;
+  userStoryLastKey = 1;
   hashtagLastKey = -1;
-  pageSize = 4;
+  pageSize = 10;
 
   resetUserFeedLastKey = () => {
-    this.userFeedLastKey = -1;
+    this.userFeedLastKey = 1;
   }
 
   resetUserStoryLastKey = () => {
-    this.userStoryLastKey = -1;
+    this.userStoryLastKey = 1;
   }
 
   resetHashtagLastKey = () => {
-    this.hashtagLastKey = -1;
+    this.hashtagLastKey = 1;
   }
 
   setPageSize = pageSize => {

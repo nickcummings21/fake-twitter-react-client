@@ -14,7 +14,7 @@ const Login = props => {
           <div className="password-label">Password:</div>
           <input type="password" className="password-input" />
         </div>
-        <div className="login-btn" onClick={() => props.login("username")}>
+        <div className="login-btn" onClick={() => props.login(document.querySelector(".username-email-input").value)}>
           Login
         </div>
         <div className="btn-separator">OR</div>

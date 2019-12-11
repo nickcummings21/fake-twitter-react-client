@@ -107,19 +107,15 @@ export default class ServerProxy {
   };
 
   getUserStory = async (username, lastKey, pageSize) => {
-    let body = {
-      username,
-      lastKey,
-      pageSize
-    };
+    const path = "/story/" + username + "?lastKey=" + lastKey + "&pageSize=" + pageSize;
     let getUserStoryResult = await this.apigClient.invokeApi(
       {},
-      "/story",
+      path,
       "GET",
       {},
-      body
+      {}
     );
-    console.log("Get User Story", username, getUserStoryResult.data);
+    console.log("Get User Story", getUserStoryResult);
     return getUserStoryResult.data;
   };
 
@@ -156,5 +152,24 @@ export default class ServerProxy {
     );
     console.log("Create Status", createStatusResult.data);
     return createStatusResult.data;
+  };
+  
+  createUser = async user => {
+    let body = {
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      password: user.password,
+      profilePic: user.profilePic
+    };
+    let createUserResult = await this.apigClient.invokeApi(
+      {},
+      "/users",
+      "POST",
+      {},
+      body
+    );
+    console.log("Create User", createUserResult.data);
+    return createUserResult.data;
   };
 }

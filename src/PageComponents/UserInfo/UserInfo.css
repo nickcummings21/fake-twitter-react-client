@@ -1,0 +1,67 @@
+.home .user-info-col {
+  grid-area: info-col;
+  border-right: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+}
+
+.home .user-info-col .prof-pic-container {
+  width: 150px;
+  height: 150px;
+  margin: 1rem auto;
+  border-radius: 50%;
+  overflow: hidden;
+  /* background: #888; */
+}
+
+.home .user-info-col .prof-pic-container img {
+  width: 100%;
+}
+
+.home .user-info {
+  text-align: center;
+}
+
+.home .user-info div {
+  margin-bottom: 0.2rem;
+}
+
+.home .user-info .user-realname {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.home .user-info .user-username {
+  color: #777;
+}
+
+.home .user-info .user-following:hover,
+.home .user-info .user-followers:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.home .user-info .publish-status-btn,
+.home .user-info .follow-btn,
+.home .user-info .unfollow-btn {
+  width: 100px;
+  margin: 1rem auto;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.home .user-info .publish-status-btn {
+  background: orange;
+  color: white;
+}
+
+.home .user-info .follow-btn {
+  background: orange;
+  color: white;
+}
+
+.home .user-info .unfollow-btn {
+  background: #888;
+  color: white;
+}

@@ -3,20 +3,25 @@ import { User } from "../Models";
 
 export default class UserService {
   serverProxy = new ServerProxy();
-  userFollowersLastKey = -1;
-  userFollowingLastKey = -1;
-  pageSize = 3;
+  userFollowersLastKey = 1;
+  userFollowingLastKey = 1;
+  pageSize = 10;
 
   resetUserFollowersLastKey = () => {
-    this.userFollowersLastKey = -1;
+    this.userFollowersLastKey = 1;
   };
 
   resetUserFollowingLastKey = () => {
-    this.userFollowingLastKey = -1;
+    this.userFollowingLastKey = 1;
   };
 
   setPageSize = pageSize => {
     this.pageSize = pageSize;
+  }
+
+  createUser = async user => {
+    const userData = await this.serverProxy.createUser(user);
+    return userData;
   }
 
   getUserInfo = async username => {
@@ -59,11 +64,11 @@ export default class UserService {
     return followingData;
   };
 
-  followUser = (activeUser, followThisUser) => {
-    this.serverProxy.followUser(activeUser, followThisUser);
+  followUser = async (activeUser, followThisUser) => {
+    await this.serverProxy.followUser(activeUser, followThisUser);
   };
 
-  unfollowUser = (activeUser, unfollowThisUser) => {
-    this.serverProxy.unfollowUser(activeUser, unfollowThisUser);
+  unfollowUser = async (activeUser, unfollowThisUser) => {
+    await this.serverProxy.unfollowUser(activeUser, unfollowThisUser);
   };
 }

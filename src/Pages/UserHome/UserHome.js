@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 
-import { Modal, Backdrop } from "../../Components";
+import { Modal, Backdrop, UserLink, Status } from "../../Components";
 import { UserInfo, StatusModal } from "../../PageComponents";
 import "./UserHome.css";
 
-import { Status } from "../../Components";
 import { UserController, StatusController } from "../../Controllers";
 
 const UserHome = props => {
@@ -47,11 +46,12 @@ const UserHome = props => {
     console.log("Got target user", props.targetUser, user);
 
     const userInfo = await userController.getUserInfo(user.username);
-    const userFeed = await statusController.getUserFeed(user.username);
-    const userStory = await statusController.getUserStory(user.username);
+    const userFeed = (await statusController.getUserFeed(user.username)).reverse();
+    const userStory = (await statusController.getUserStory(user.username)).reverse();
 
     // Cache basic info for followers and followees and users in feed
     const cachedUsers = {};
+    cachedUsers[user.username] = user;
     for (let i = 0; i < userInfo.followers.length; i++) {
       const cacheUser = userInfo.followers[i];
       cachedUsers[cacheUser] = await userController.getUser(cacheUser);
@@ -85,14 +85,6 @@ const UserHome = props => {
     resetPageState();
   };
 
-  const UserLink = props => {
-    return (
-      <span className="user-link" onClick={() => switchTargetUser(props.user)}>
-        {props.children}
-      </span>
-    );
-  };
-
   const getUserFollowing = () => {
     // console.log(pageState.user);
     const following = pageState.user.allData.following;
@@ -104,7 +96,10 @@ const UserHome = props => {
         followingElArray.push(
           <div key={i}>
             {thisUser.name} (@
-            <UserLink user={thisUsername}>{thisUsername}</UserLink>)
+            <UserLink user={thisUsername} switchTargetUser={switchTargetUser}>
+              {thisUsername}
+            </UserLink>
+            )
           </div>
         );
       }
@@ -122,7 +117,10 @@ const UserHome = props => {
         followersElArray.push(
           <div key={i}>
             {thisUser.name} (@
-            <UserLink user={thisUsername}>{thisUsername}</UserLink>)
+            <UserLink user={thisUsername} switchTargetUser={switchTargetUser}>
+              {thisUsername}
+            </UserLink>
+            )
           </div>
         );
       }
@@ -153,6 +151,47 @@ const UserHome = props => {
     setSelectedStatus(null);
   };
 
+  const publishStatus = async () => {
+    closeModal();
+
+    await statusController.createStatus(
+      props.activeUser,
+      document.querySelector("#new-status").value,
+      document.querySelector("#new-attachment").value
+    );
+
+    const updatedStory = await statusController.getUserStory(props.activeUser);
+    setPageState(prevState => {
+      return {
+        activePage: "story",
+        pageLoaded: true,
+        user: {
+          basicData: { ...prevState.user.basicData },
+          allData: { ...prevState.user.allData },
+          feed: prevState.user.feed || [],
+          story: updatedStory.reverse()
+        },
+        cachedUsers: prevState.cachedUsers
+      };
+    });
+    console.log("Page state updated", pageState);
+  };
+
+  const updateProfilePic = pic => {
+    console.log("Updating prof pic", pic);
+    const old = pageState.user.basicData;
+    const updateUser = {
+      username: old.username,
+      name: old.name,
+      email: old.email,
+      profilePic: pic,
+      password: "testpw"
+    };
+    console.log(updateUser);
+    userController.createUser(updateUser);
+    resetPageState();
+  }
+
   const switchPage = page => {
     console.log(page);
     setPageState(prevState => {
@@ -176,15 +215,17 @@ const UserHome = props => {
   };
 
   const renderUserStory = () => {
+    const story = pageState.user.story;
     return (
       <div className="story">
-        {pageState.user.story.map((status, i) => {
+        {story.map((status, i) => {
           return (
             <Status
               key={i}
               status={status}
               user={pageState.user.basicData}
               open={() => openViewStatusModal(status)}
+              switchTargetUser={switchTargetUser}
             />
           );
         })}
@@ -193,15 +234,17 @@ const UserHome = props => {
   };
 
   const renderUserFeed = () => {
+    const feed = pageState.user.feed;
     return (
       <div className="feed">
-        {pageState.user.feed.map((status, i) => {
+        {feed.map((status, i) => {
           return (
             <Status
               key={i}
               status={status}
-              user={pageState.cachedUsers[status.user]}
+              user={pageState.cachedUsers[status.username]}
               open={() => openViewStatusModal(status)}
+              switchTargetUser={switchTargetUser}
             />
           );
         })}
@@ -211,8 +254,12 @@ const UserHome = props => {
 
   const renderSelectedStatus = () => {
     if (!selectedStatus) return null;
-    let statusUser = pageState.cachedUsers[selectedStatus.user];
-
+    console.log("see status", selectedStatus);
+    let statusUser =
+      selectedStatus.username === props.activeUser
+        ? pageState.user.basicData
+        : pageState.cachedUsers[selectedStatus.username];
+    console.log("see status user", statusUser);
     return (
       <StatusModal
         statusUser={statusUser}
@@ -237,6 +284,17 @@ const UserHome = props => {
           openUserFollowersModal={openUserFollowersModal}
           openUserFollowingModal={openUserFollowingModal}
           openPublishStatusModal={openPublishStatusModal}
+          updateProfilePic={updateProfilePic}
+          followUser={() => {
+            userController
+              .followUser(props.activeUser, props.targetUser)
+              .then(() => resetPageState("story"));
+          }}
+          unfollowUser={() => {
+            userController
+              .unfollowUser(props.activeUser, props.targetUser)
+              .then(() => resetPageState("story"));
+          }}
         />
         <div className="toolbar">
           <div className={storyClasses} onClick={() => switchPage("story")}>
@@ -288,12 +346,16 @@ const UserHome = props => {
                 rows="10"
               ></textarea>
             </div>
-            Attach a file:{" "}
-            <input type="file" className="publish-status-modal-attach-file" />
+            Attach a URL:{" "}
+            <input
+              type="text"
+              id="new-attachment"
+              className="publish-status-modal-attach-file"
+            />
             <div className="publish-status-modal-btns">
               <div
                 className="publish-status-modal-submit-btn"
-                onClick={closeModal}
+                onClick={publishStatus}
               >
                 Submit
               </div>
@@ -309,6 +371,13 @@ const UserHome = props => {
       </div>
     );
   };
+
+  if (
+    pageState.user.basicData &&
+    props.targetUser !== pageState.user.basicData.username
+  ) {
+    resetPageState("feed");
+  }
 
   getPageInfo();
   console.log("Page loaded: ", pageState);

@@ -2,29 +2,33 @@ import React, { useState } from "react";
 import "./App.css";
 import Navbar from "./Components/Navbar/Navbar";
 import { Login, Register, UserHome } from "./Pages";
+import { UserController } from "./Controllers";
 
 const App = () => {
   const [pageState, setPageState] = useState("login");
   const [userState, setUserState] = useState({
     loggedIn: false,
-    activeUser: "nickcummings21",
-    targetUser: "nickcummings21"
+    activeUser: "",
+    targetUser: ""
   });
+
+  const userController = new UserController();
 
   const login = async username => {
     await setUserState({
       loggedIn: true,
-      activeUser: "nickcummings21",
-      targetUser: "nickcummings21"
+      activeUser: username,
+      targetUser: username
     });
     setPageState("userHome");
   };
 
-  const register = async username => {
+  const register = async user => {
+    await userController.createUser(user);
     await setUserState({
       loggedIn: true,
-      activeUser: "nickcummings21",
-      targetUser: "nickcummings21"
+      activeUser: user.username,
+      targetUser: user.username
     });
     setPageState("userHome");
   };
